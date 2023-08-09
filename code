@@ -1,0 +1,41 @@
+#include <LedControl.h>
+
+#define MQ2PIN A0     // Analog pin connected to the MQ-2 sensor
+#define BUZZER_PIN 7  // Digital pin connected to the buzzer
+#define CS_PIN 10     // CS (Chip Select) pin for MAX7219
+#define CLK_PIN 13    // CLK (Clock) pin for MAX7219
+#define DIN_PIN 11    // DIN (Data In) pin for MAX7219
+
+LedControl lc = LedControl(DIN_PIN, CLK_PIN, CS_PIN, 1);
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(BUZZER_PIN, OUTPUT);
+
+  lc.shutdown(0, false); // Turn on the MAX7219 module
+  lc.setIntensity(0, 8); // Set the LED intensity
+  lc.clearDisplay(0);    // Clear the display
+}
+
+void loop() {
+  int gasValue = analogRead(MQ2PIN);
+
+  // Spoilage detection logic
+  if (gasValue > 300) { // Adjust threshold as needed
+    Serial.println("Food spoilage detected!");
+    alert();
+    lc.setLed(0, 0, 0, true); // Turn on LED in grid
+    delay(2000); // Display alert for 2 seconds
+    lc.setLed(0, 0, 0, false); // Turn off LED
+  }
+
+  delay(5000); // Delay between readings
+}
+
+void alert() {
+  digitalWrite(BUZZER_PIN, HIGH);
+  delay(1000); // Buzzer on for 1 second
+  digitalWrite(BUZZER_PIN, LOW);
+}
+
+// Rest of the code remains the same
